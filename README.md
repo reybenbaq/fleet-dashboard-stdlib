@@ -4,7 +4,7 @@
 
 ## What this is
 
-A single Python script that reads a CSV of GPS device records and outputs a fully self-contained HTML dashboard — interactive map, device status table, battery indicators, relative-time formatting, and status summary chips — in one file you can open in any browser, online or off.
+A single Python script that reads a CSV of GPS device records and outputs a fully self-contained HTML dashboard: interactive map, device status table, battery indicators, relative-time formatting, and status summary chips. One file. Open it in any browser, online or off.
 
 The constraint was strict: Python standard library only. No pandas, no Jinja2, no Plotly, no chart library of any kind. The map tiles come from OpenStreetMap at run-time via `urllib.request`, and the Leaflet CSS and JS are embedded inline in the output so the result works completely offline after generation.
 
@@ -16,9 +16,9 @@ Most developers who hit a "build a dashboard from a CSV" requirement reach for p
 
 The challenge added one additional constraint: the output must work with minimal or no internet connection.
 
-That combination — no external libraries at import time, and offline-capable output — rules out the standard toolkit. Solving it requires falling back to Python fundamentals: the `csv` module, `dataclasses`, `datetime`, `json`, `pathlib`, `urllib.request`, and string manipulation. The map is embedded by fetching the Leaflet assets once at generation time and inlining them into the HTML. After that, the file is self-contained forever.
+No external libraries at import time, and offline-capable output. That combination rules out the standard toolkit. Solving it requires falling back to Python fundamentals: the `csv` module, `dataclasses`, `datetime`, `json`, `pathlib`, `urllib.request`, and string manipulation. The script fetches the Leaflet assets once at generation time and inlines them into the HTML. After that, the file is self-contained forever.
 
-The hard part is not the data parsing. It is building a polished, functional UI without a templating engine, without a component library, and without a charting framework, while still handling edge cases — missing coordinates, out-of-range battery values, unparseable timestamps, unknown status codes — without crashing.
+The hard part is not the data parsing. It is building a polished, functional UI without a templating engine, without a component library, and without a charting framework, while still handling edge cases (missing coordinates, out-of-range battery values, unparseable timestamps, unknown status codes) without crashing.
 
 ## What the output looks like
 
@@ -54,7 +54,7 @@ fleet_status.csv
       ▼
  build_html()
  (str.replace() on <!-- TOKEN --> placeholders
-  — never f-strings, never format() on the template)
+  not f-strings, not format() on the template)
       │
       ▼
  fleet_dashboard.html
@@ -96,11 +96,11 @@ The script reads `fleet_status.csv` from the same directory as the script. Colum
 | `last_seen` | `YYYY-MM-DD HH:MM:SS` | Optional. Future dates display as a formatted timestamp, not relative time |
 | `location` | string | Optional. Displayed in the table and the map popup |
 
-Missing or malformed values are logged and handled gracefully. The script never crashes on bad input.
+The script logs and handles missing or malformed values gracefully. It never crashes on bad input.
 
 ## Design decisions worth calling out
 
-**`<!-- TOKEN -->` placeholders, not f-strings.** The HTML template is a module-level string constant. Applying `str.format()` or an f-string to it would fail on the first CSS rule that uses `{}` — every custom property definition, every keyframe, every calc expression. Comment-style tokens are invisible to CSS and JavaScript parsers and unambiguous to `str.replace()`. The template is injected in the correct order: Leaflet CSS first (it uses `url()` references that must appear before Leaflet JS initialisation), then JS, then the data payloads.
+**`<!-- TOKEN -->` placeholders, not f-strings.** The HTML template is a module-level string constant. Applying `str.format()` or an f-string to it would fail on the first CSS rule that uses `{}`. Custom properties, keyframes, calc expressions all use curly braces. Comment-style tokens are invisible to CSS and JavaScript parsers and unambiguous to `str.replace()`. The builder replaces tokens in order: Leaflet CSS first (its `url()` references must resolve before Leaflet JS initialises), then JS, then data payloads.
 
 **`dataclass` as the data model.** A plain `dict` per row works, but it pushes the field-name strings to every call site. The `Device` dataclass centralises field names, gives type annotations for IDE support, and puts derived properties (`has_coordinates`, `status_color`, `battery_color`, `status_sort_key`) in one place. Adding a new display column means editing one class, not hunting through fragment builders.
 

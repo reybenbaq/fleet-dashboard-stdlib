@@ -14,7 +14,7 @@ The correct approach for injecting data into a document that already uses curly 
 - Unambiguous to `str.replace()` (no accidental collisions with template content)
 - Human-readable (the template is readable on its own before substitution)
 
-Each token is replaced exactly once. The replacement order matters for one case: `<!-- LEAFLET_CSS -->` must be replaced before `<!-- LEAFLET_JS -->` because the Leaflet CSS references relative image paths that Leaflet JS resolves during initialisation. Getting the order wrong produces a broken map.
+The builder replaces each token exactly once. The replacement order matters for one case: `<!-- LEAFLET_CSS -->` must be replaced before `<!-- LEAFLET_JS -->` because the Leaflet CSS references relative image paths that Leaflet JS resolves during initialisation. Getting the order wrong produces a broken map.
 
 ## Why the Device dataclass exists
 
@@ -49,7 +49,7 @@ Each parsing helper has a single contract: convert a raw string to a typed value
 - Minutes (< 60): "Xm ago"
 - Hours with remainder: "Xh Ym ago" or "Xh ago"
 - Days with remainder: "Xd Yh ago" or "Xd ago"
-- Future dates (negative delta): formatted as `YYYY-MM-DD HH:MM` — devices with unsynchronised clocks report future timestamps; a negative relative time would be confusing
+- Future dates (negative delta): formatted as `YYYY-MM-DD HH:MM`. Devices with unsynchronised clocks report future timestamps. A negative relative time would confuse the operator
 
 The reference "now" is a hardcoded constant (`REFERENCE_NOW = datetime(2026, 4, 24, 9, 0, 0)`), matching the snapshot timestamp in the challenge spec. Using `datetime.now()` would cause the relative-time values to change every time the script runs, making the output non-deterministic. The hardcoded reference ensures the generated dashboard matches the expected output.
 
@@ -65,7 +65,7 @@ The embedding strategy means:
 
 The download happens once per run. If the CDN is unreachable, `fetch_leaflet_assets()` raises immediately with a clear error. The script does not partially generate the file and then fail mid-write.
 
-Leaflet 1.9.4 was chosen because it is the current stable release and its CDN URL is stable. The version is pinned in the constants. Updating it is a one-line change.
+The project pins Leaflet 1.9.4 because it is the current stable release and its CDN URL is stable. The constants hold the version. Updating it is a one-line change.
 
 ## What was deliberately left out
 
