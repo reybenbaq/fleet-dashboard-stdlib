@@ -1,0 +1,27 @@
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+*.egg
+
+.venv/
+venv/
+env/
+
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+*.log
+
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Generated output — not committed; run the script to regenerate
+fleet_dashboard.html
