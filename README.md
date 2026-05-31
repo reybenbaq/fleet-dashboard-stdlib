@@ -49,7 +49,7 @@ fleet_status.csv
       │
       ▼
  fetch_leaflet_assets()
- (urllib.request — one HTTP fetch, then embedded)
+ (urllib.request, one HTTP fetch, then embedded)
       │
       ▼
  build_html()
@@ -69,7 +69,7 @@ The template uses `<!-- TOKEN -->` comment placeholders, not `{}` or `%s`. That 
 |---|---|
 | `src/fleet_dashboard.py` | Single entry point. Data model, CSV reader, parsing helpers, HTML fragment builders, Leaflet asset fetcher, template, and `main()`. Pure standard library |
 | `data/fleet_status.csv` | Sample input. 35 devices across Australian cities. Includes intentional edge cases: missing coordinates, out-of-range battery, unparseable lat, future timestamp, unknown status |
-| `docs/design.md` | Design rationale — why the template substitution works the way it does, how the failure cases are handled, and what was deliberately left out |
+| `docs/design.md` | Design rationale. Why the template substitution works the way it does, how the failure cases are handled, and what was deliberately left out |
 
 ## Running it
 
@@ -114,7 +114,7 @@ The script logs and handles missing or malformed values gracefully. It never cra
 
 ## Not in scope
 
-- **Real-time updates.** The dashboard is a snapshot, not a live feed. Refreshing the data means re-running the script. A live dashboard would require a server, a WebSocket connection, or a polling refresh — all of which add a deployment requirement that defeats the zero-setup goal.
+- **Real-time updates.** The dashboard is a snapshot, not a live feed. Refreshing the data means re-running the script. A live dashboard would require a server, a WebSocket connection, or a polling refresh. All of those add a deployment requirement that defeats the zero-setup goal.
 - **Filtering and search.** The table renders all devices. Client-side filtering is straightforward to add (a `<input>` that filters rows by `textContent`) but was not part of the challenge.
 - **Authentication.** The output file is a static HTML file. It has no auth surface. If the data is sensitive, the protection is at the file-system level, not in the dashboard.
 - **Database or API input.** The script reads a CSV. Adapting it to read from a REST API or a database query is a two-line change to `load_devices()`. The CSV is the simplest possible input format that demonstrates the full pipeline.

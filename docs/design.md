@@ -24,22 +24,22 @@ The `Device` dataclass converts the CSV row once, at parse time. From that point
 
 More importantly, the derived properties live in the class:
 
-- `has_coordinates` — guards the map marker loop cleanly. Without it, every caller would repeat `d.lat is not None and d.lon is not None`.
-- `status_color`, `battery_color` — lookup logic that would otherwise be duplicated in every fragment builder that renders a coloured element.
-- `status_sort_key` — the sort function is one key expression: `key=lambda d: (d.status_sort_key, d.device_id)`. Without the property, that lambda would embed a list lookup with a fallback.
-- `display_name` — falls back to `device_id` when `name` is blank. Without the property, every renderer would write `d.name if d.name else d.device_id`.
+- `has_coordinates` guards the map marker loop cleanly. Without it, every caller would repeat `d.lat is not None and d.lon is not None`.
+- `status_color`, `battery_color` centralise lookup logic that would otherwise be duplicated in every fragment builder that renders a coloured element.
+- `status_sort_key` makes the sort function one key expression: `key=lambda d: (d.status_sort_key, d.device_id)`. Without the property, that lambda would embed a list lookup with a fallback.
+- `display_name` falls back to `device_id` when `name` is blank. Without the property, every renderer would write `d.name if d.name else d.device_id`.
 
 ## Parsing philosophy
 
 Each parsing helper has a single contract: convert a raw string to a typed value or `None`. Never crash. Always log a warning when something unexpected happens.
 
-**`_clamp_battery`** — battery readings from GPS hardware can be out of range due to sensor calibration drift. Clamping preserves the information (the device is reporting something) while correcting the display value. Discarding out-of-range readings would silently remove real devices from the battery status columns.
+**`_clamp_battery`** handles battery readings from GPS hardware that can be out of range due to sensor calibration drift. Clamping preserves the information (the device is reporting something) while correcting the display value. Discarding out-of-range readings would silently remove real devices from the battery status columns.
 
-**`_parse_coordinates`** — both lat and lon must be valid floats for the device to appear on the map. A partial coordinate is worse than no coordinate; a marker placed at `(lat, 0)` would appear in the Atlantic Ocean. The function returns `(None, None)` on any parse failure. The `Device.has_coordinates` property then guards the map marker loop.
+**`_parse_coordinates`** requires both lat and lon to be valid floats for the device to appear on the map. A partial coordinate is worse than no coordinate. A marker placed at `(lat, 0)` would appear in the Atlantic Ocean. The function returns `(None, None)` on any parse failure. The `Device.has_coordinates` property then guards the map marker loop.
 
-**`_parse_last_seen`** — the format is fixed at `%Y-%m-%d %H:%M:%S`. Looser parsing (trying multiple formats) would paper over data quality issues that the operator should fix at the source. Strict parsing with a warning log surfaces them.
+**`_parse_last_seen`** expects the format `%Y-%m-%d %H:%M:%S`. Looser parsing (trying multiple formats) would paper over data quality issues that the operator should fix at the source. Strict parsing with a warning log surfaces them.
 
-**`_normalise_status`** — unknown status values are passed through (not mapped to `unknown`). This preserves the raw value in the status badge so the operator can see what the device is actually reporting. The warning log flags it for investigation.
+**`_normalise_status`** passes unknown status values through (not mapped to `unknown`). This preserves the raw value in the status badge so the operator can see what the device is actually reporting. The warning log flags it for investigation.
 
 ## Relative-time formatting
 
